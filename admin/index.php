@@ -1,5 +1,12 @@
+<!-- admin/index.php -->
 <?php
+session_start();
 include '../includes/db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 // 获取筛选条件
 $region = isset($_GET['region']) ? $_GET['region'] : '';
@@ -126,65 +133,65 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button type="submit">刷新</button>
     </form>
 
-<!-- 申请列表 -->
-<table>
-    <thead>
-        <tr>
-            <!--<th>ID</th>-->
-            <th>姓名</th>
-            <th>QQ</th>
-            <th>区域</th>
-            <th>Radio ID</th>
-            <th>状态</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($applications as $app): ?>
-        <tr>
-            <!--<td><?= $app['id'] ?></td>-->
-            <td><?= $app['name'] ?></td>
-            <td><?= $app['qq'] ?></td>
-            <td><?= $app['region'] ?></td>
-            <td><?= $app['radio_id'] ?></td>
-            <td><?= $app['status'] ?></td>
-            <td>
-                <!-- 批准操作按钮 -->
-                <button onclick="openApprovalModal(<?= $app['id'] ?>)">批准操作</button>
-                <button onclick="openModal(<?= $app['id'] ?>, <?= $app['radio_id'] ?>)">修改 ID</button>
-                <form action="delete.php" method="POST" style="display:inline;">
-                    <input type="hidden" name="id" value="<?= $app['id'] ?>">
-                    <button type="submit" style="background-color: #dc3545;">删除</button>
-                </form>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+    <!-- 申请列表 -->
+    <table>
+        <thead>
+            <tr>
+                <!--<th>ID</th>-->
+                <th>姓名</th>
+                <th>QQ</th>
+                <th>区域</th>
+                <th>Radio ID</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($applications as $app): ?>
+            <tr>
+                <!--<td><?= $app['id'] ?></td>-->
+                <td><?= htmlspecialchars($app['name']) ?></td>
+                <td><?= htmlspecialchars($app['qq']) ?></td>
+                <td><?= htmlspecialchars($app['region']) ?></td>
+                <td><?= htmlspecialchars($app['radio_id']) ?></td>
+                <td><?= htmlspecialchars($app['status']) ?></td>
+                <td>
+                    <!-- 批准操作按钮 -->
+                    <button onclick="openApprovalModal(<?= $app['id'] ?>)">批准操作</button>
+                    <button onclick="openModal(<?= $app['id'] ?>, <?= $app['radio_id'] ?>)">修改 ID</button>
+                    <form action="delete.php" method="POST" style="display:inline;">
+                        <input type="hidden" name="id" value="<?= $app['id'] ?>">
+                        <button type="submit" style="background-color: #dc3545;">删除</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 
-<!-- 弹出窗口 -->
-<div class="overlay" id="overlay"></div>
-<div class="modal" id="approvalModal">
-    <h2>批准操作</h2>
-    <form action="update_status.php" method="POST">
-        <input type="hidden" name="id" id="modalApprovalId">
-        <button type="submit" name="status" value="approved">批准</button>
-        <button type="submit" name="status" value="rejected">拒绝</button>
-    </form>
-    <button type="button" onclick="closeApprovalModal()">取消</button>
-</div>
+    <!-- 弹出窗口 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="approvalModal">
+        <h2>批准操作</h2>
+        <form action="update_status.php" method="POST">
+            <input type="hidden" name="id" id="modalApprovalId">
+            <button type="submit" name="status" value="approved">批准</button>
+            <button type="submit" name="status" value="rejected">拒绝</button>
+        </form>
+        <button type="button" onclick="closeApprovalModal()">取消</button>
+    </div>
 
-<div class="overlay" id="overlay"></div>
-<div class="modal" id="modal">
-    <h2>修改 Radio ID</h2>
-    <form id="updateIdForm" method="POST" action="update_id.php">
-        <input type="hidden" name="id" id="modalId">
-        <label for="new_id">新 Radio ID:</label>
-        <input type="number" name="new_id" id="new_id" required>
-        <button type="submit">保存</button>
-        <button type="button" onclick="closeModal()">取消</button>
-    </form>
-</div>
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal">
+        <h2>修改 Radio ID</h2>
+        <form id="updateIdForm" method="POST" action="update_id.php">
+            <input type="hidden" name="id" id="modalId">
+            <label for="new_id">新 Radio ID:</label>
+            <input type="number" name="new_id" id="new_id" required>
+            <button type="submit">保存</button>
+            <button type="button" onclick="closeModal()">取消</button>
+        </form>
+    </div>
 
     <script>
         // 打开批准弹窗
