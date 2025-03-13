@@ -23,10 +23,20 @@
    );
    ```
 
+   然后创建管理员账号数据库
+
+   ```sql
+   CREATE TABLE users (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       username VARCHAR(191) NOT NULL UNIQUE,
+       password VARCHAR(255) NOT NULL
+   ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
    
 
 3. 访问 `application/index.php` 提交申请。
 
-4. 访问 `admin/index.php` 管理申请。
+4. 访问 `admin/index.php` 管理后台。
 
 ## By BI7ACC
