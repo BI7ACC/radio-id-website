@@ -82,6 +82,12 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .modal button:hover {
             background-color: #218838;
         }
+        .modal button[type="button"] {
+            background-color: #dc3545;
+        }
+        .modal button[type="button"]:hover {
+            background-color: #c82333;
+        }
         .overlay {
             display: none;
             position: fixed;
@@ -97,7 +103,6 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <h1>Radio ID 申请管理</h1>
 
-  
     <!-- 筛选表单 -->
     <form action="index.php" method="GET">
         <label for="region">筛选区域:</label>
@@ -121,70 +126,78 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button type="submit">刷新</button>
     </form>
 
-    <!-- 申请列表 -->
-    <table>
-        <thead>
-            <tr>
-                <!--<th>ID</th>-->
-                <th>姓名</th>
-                <th>QQ</th>
-                <th>区域</th>
-                <th>Radio ID</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($applications as $app): ?>
-            <tr>
-                <!--<td><?= $app['id'] ?></td>-->
-                <td><?= $app['name'] ?></td>
-                <td><?= $app['qq'] ?></td>
-                <td><?= $app['region'] ?></td>
-                <td><?= $app['radio_id'] ?></td>
-                <td><?= $app['status'] ?></td>
-                <td>
-                    <!-- 折叠菜单 -->
-                    <div class="collapse-menu">
-                        <button onclick="toggleCollapse()">批准操作</button>
-                        <div class="collapse-content" id="collapseContent">
-                            <form action="update_status.php" method="POST" style="display:inline;">
-                                <input type="hidden" name="id" value="<?= $app['id'] ?>">
-                                <button type="submit" name="status" value="approved">批准</button>
-                                <button type="submit" name="status" value="rejected">拒绝</button>
-                            </form>
-                        </div>
-                    </div>
+<!-- 申请列表 -->
+<table>
+    <thead>
+        <tr>
+            <!--<th>ID</th>-->
+            <th>姓名</th>
+            <th>QQ</th>
+            <th>区域</th>
+            <th>Radio ID</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($applications as $app): ?>
+        <tr>
+            <!--<td><?= $app['id'] ?></td>-->
+            <td><?= $app['name'] ?></td>
+            <td><?= $app['qq'] ?></td>
+            <td><?= $app['region'] ?></td>
+            <td><?= $app['radio_id'] ?></td>
+            <td><?= $app['status'] ?></td>
+            <td>
+                <!-- 批准操作按钮 -->
+                <button onclick="openApprovalModal(<?= $app['id'] ?>)">批准操作</button>
+                <button onclick="openModal(<?= $app['id'] ?>, <?= $app['radio_id'] ?>)">修改 ID</button>
+                <form action="delete.php" method="POST" style="display:inline;">
+                    <input type="hidden" name="id" value="<?= $app['id'] ?>">
+                    <button type="submit" style="background-color: #dc3545;">删除</button>
+                </form>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
 
-                    <button onclick="openModal(<?= $app['id'] ?>, <?= $app['radio_id'] ?>)">修改 ID</button>
-                    <form action="delete.php" method="POST" style="display:inline;">
-                        <input type="hidden" name="id" value="<?= $app['id'] ?>">
-                        <button type="submit" style="background-color: #dc3545;">删除</button>
-                    </form>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+<!-- 弹出窗口 -->
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="approvalModal">
+    <h2>批准操作</h2>
+    <form action="update_status.php" method="POST">
+        <input type="hidden" name="id" id="modalApprovalId">
+        <button type="submit" name="status" value="approved">批准</button>
+        <button type="submit" name="status" value="rejected">拒绝</button>
+    </form>
+    <button type="button" onclick="closeApprovalModal()">取消</button>
+</div>
 
-    <!-- 弹出窗口 -->
-    <div class="overlay" id="overlay"></div>
-    <div class="modal" id="modal">
-        <h2>修改 Radio ID</h2>
-        <form id="updateIdForm" method="POST" action="update_id.php">
-            <input type="hidden" name="id" id="modalId">
-            <label for="new_id">新 Radio ID:</label>
-            <input type="number" name="new_id" id="new_id" required>
-            <button type="submit">保存</button>
-            <button type="button" onclick="closeModal()">取消</button>
-        </form>
-    </div>
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="modal">
+    <h2>修改 Radio ID</h2>
+    <form id="updateIdForm" method="POST" action="update_id.php">
+        <input type="hidden" name="id" id="modalId">
+        <label for="new_id">新 Radio ID:</label>
+        <input type="number" name="new_id" id="new_id" required>
+        <button type="submit">保存</button>
+        <button type="button" onclick="closeModal()">取消</button>
+    </form>
+</div>
 
     <script>
-        // 折叠菜单功能
-        function toggleCollapse() {
-            const content = document.getElementById('collapseContent');
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        // 打开批准弹窗
+        function openApprovalModal(id) {
+            document.getElementById('modalApprovalId').value = id;
+            document.getElementById('approvalModal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        // 关闭批准弹窗
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
         }
 
         // 弹出窗口功能
@@ -201,7 +214,10 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         // 点击遮罩层关闭弹出窗口
-        document.getElementById('overlay').addEventListener('click', closeModal);
+        document.getElementById('overlay').addEventListener('click', function() {
+            closeApprovalModal();
+            closeModal();
+        });
     </script>
 </body>
 </html>
